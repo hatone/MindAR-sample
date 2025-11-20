@@ -1,0 +1,142 @@
+# AGENTS.md — MindAR + Three.js AR demo
+
+Think of this file as a README specifically for AI coding agents (and future humans).  
+This repository is (or will become) a small WebAR demo that recognizes a specific door image (`IMG_0116.jpg`) and overlays the text `"Sample Text"` anchored on top of the detected door using MindAR and Three.js.
+
+---
+
+## ExecPlans
+
+ExecPlans are detailed, self-contained design + execution documents. They are described in `.agent/PLANS.md`.
+
+- When implementing any feature that:
+  - touches multiple files, **or**
+  - introduces or changes dependencies, **or**
+  - will likely take more than ~30 minutes of focused work,
+
+  you **must** first create or update an ExecPlan following `.agent/PLANS.md`.
+
+- Refer to these documents by the term **ExecPlan** in prompts and commit messages. Example prompt to a coding agent:
+
+  > Create an ExecPlan to implement a MindAR + Three.js feature that recognizes `IMG_0116.jpg` and overlays the text "Sample Text" on the detected door surface.
+
+- While executing an ExecPlan:
+  - Do **not** wait for the user to tell you “next steps”.  
+  - Move milestone by milestone.  
+  - Keep `Progress`, `Surprises & Discoveries`, `Decision Log`, and `Outcomes & Retrospective` up to date as you go.
+
+---
+
+## Project overview
+
+- Target behavior:
+  - Use the device camera to detect a specific door image (`IMG_0116.jpg`).
+  - When the target is detected, render `"Sample Text"` as an overlay that appears fixed on the door (image-tracked AR).
+- Core libraries:
+  - **MindAR** (image tracking variant) is responsible for detecting the image target and providing its pose.
+  - **Three.js** is used as the rendering engine to draw the overlay text and any supporting meshes.
+- Typical assets (expected but not enforced):
+  - A compiled MindAR target file such as `public/targets/door.mind` generated from `IMG_0116.jpg`.
+  - The original image file `public/assets/IMG_0116.jpg` for documentation and test purposes.
+
+If the repository already has a different structure, follow the existing conventions and document any deviations inside the relevant ExecPlan.
+
+---
+
+## Dev environment and tooling
+
+Use the existing toolchain if one is present. If there is no toolchain yet, the default recommendation is:
+
+- Package manager: `npm`
+- Dev server and bundler: Vite with vanilla JS or TypeScript
+
+Suggested initial setup (only if no alternative exists yet):
+
+1. Initialize the project:
+
+       npm create vite@latest . -- --template vanilla
+
+   or
+
+       npm create vite@latest . -- --template vanilla-ts
+
+2. Install dependencies:
+
+       npm install mind-ar three
+
+3. Start the dev server:
+
+       npm run dev
+
+4. Open the printed local URL (usually `http://localhost:5173` or similar) on a phone or a desktop browser that supports WebXR/WebRTC camera access.
+
+If you choose a different stack (e.g. plain static HTML + `<script>` tags, webpack, or another bundler), document it in the relevant ExecPlan and keep this file aligned.
+
+---
+
+## How to think about MindAR + Three.js in this repo
+
+- Use the **image tracking** variant of MindAR suitable for Three.js integration (often exposed as `mindar-image-three`).
+- Typical high-level flow:
+  1. Create a `MindARThree` instance with:
+     - `container`: the DOM element that will host the renderer.
+     - `imageTargetSrc`: the `.mind` file compiled from `IMG_0116.jpg`.
+  2. Extract `{ renderer, scene, camera }` from the MindAR instance.
+  3. Create one or more **anchors** (e.g. `addAnchor(0)`) corresponding to each image target.
+  4. Attach Three.js content (including the `"Sample Text"` overlay) to the anchor’s group.
+  5. Start the MindAR engine and the render loop, rendering `scene` with `camera`.
+
+- For text overlays:
+  - Prefer simple, robust approaches first: e.g., a `PlaneGeometry` with a transparent texture or a canvas-based texture that draws `"Sample Text"`.
+  - If you use more advanced text helpers (e.g. Three.js text geometry or third-party text components), document the dependency and how to update it.
+
+Details of the exact APIs (imports, URLs, versions) should be written inside each ExecPlan and then implemented by code changes, not guessed at runtime.
+
+---
+
+## Testing and verification
+
+For AR behavior, automated testing is limited; manual verification is required.
+
+At minimum, an ExecPlan touching AR behavior should specify how to:
+
+1. Build or start the dev server.
+2. Open the app on a device with a camera (mobile phone is preferred).
+3. Present `IMG_0116.jpg` (printed or on another screen) to the camera.
+4. Confirm that:
+   - The camera preview is visible.
+   - The app detects the door image.
+   - The text `"Sample Text"` appears stably over the door and remains locked in place as the camera moves.
+
+Non-AR logic (e.g. helpers to resolve asset paths, configuration, etc.) should be covered by unit tests where reasonable. If a test framework (Jest, Vitest, etc.) exists, follow it; otherwise, a new ExecPlan should define how to introduce one.
+
+---
+
+## Code style and structure
+
+- Keep modules small and focused. For example:
+  - A bootstrap module for wiring MindAR + Three.js and starting the AR session.
+  - A configuration module that maps target indices to overlay definitions (e.g. which text to display).
+- Prefer explicit naming that reflects user-visible behavior, e.g.:
+  - `startDoorOverlayExperience()`
+  - `createMindarDoorAnchor()`
+- Avoid hiding important paths and configuration in magic constants:
+  - Prefer `DOOR_TARGET_MIND_PATH = "public/targets/door.mind"` (or similar) in a configuration file.
+- When introducing a new dependency:
+  - Add it to `package.json`.
+  - Note why it was chosen and how to update it in the relevant ExecPlan.
+
+---
+
+## PR / change guidelines (for Git-based workflows)
+
+If this repo is used with Git and pull requests:
+
+- Each substantial feature should correspond to an ExecPlan (or be added to an existing one).
+- Commits should reference the ExecPlan title or filename in their messages where possible.
+- Before marking an ExecPlan as complete:
+  - The app must build and run.
+  - All tests (if any) must pass.
+  - The behavior described in the ExecPlan’s **Validation and Acceptance** section must be manually verified.
+
+Small, purely cosmetic changes (e.g. typo fixes) may skip ExecPlans, but any behavior change that affects AR, MindAR configuration, or user-visible output should be covered.
