@@ -40,11 +40,11 @@
 
     <a-entity mindar-image-target="targetIndex: 0" scale="1.25 1.25 1.25">
       <a-plane
-        position="0 0 0"
-        rotation="-90 0 0"
+        position="0 0 0.02"
         width="1.6"
         height="0.9"
-        material="color: #0f172a; opacity: 0.72; transparent: true; shader: flat; side: double">
+        material="color: #0f172a; opacity: 0.72; transparent: true; shader: flat; side: double"
+        visible="true">
       </a-plane>
       <a-text
         value="ドアの使い方：\n1. カードキーをここにタッチ\n2. ランプが緑になったら開けてください"
@@ -54,8 +54,7 @@
         color="#f8fafc"
         side="double"
         position="0 0 0.04"
-        rotation="-90 0 0"
-        render-order="2">
+        visible="true">
       </a-text>
     </a-entity>
   </a-scene>
@@ -161,7 +160,8 @@
             if (obj.material) obj.renderOrder = 2;
           });
         });
-        targetEntity.addEventListener("targetFound", () => {
+        targetEntity.addEventListener("targetFound", (e) => {
+          console.log("FOUND", e);
           arStatus.textContent = "Door detected. Overlay locked.";
         });
         targetEntity.addEventListener("targetLost", () => {

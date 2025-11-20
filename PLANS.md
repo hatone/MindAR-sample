@@ -350,6 +350,7 @@ Add timestamps and notes as work progresses:
 - `2025-11-20 14:39 JST` — AR overlays not showing (target not detected). Relaxed MindAR tolerances and removed !important sizing overrides that conflicted with MindAR resizing; redeployed (unique: https://691ea95f4c4c42ab83c0b4e5--door-usage-ar-20251120.netlify.app).
 - `2025-11-20 14:48 JST` — Overlays existed but not visible; increased scale, set rotation to face the camera, bumped render order, and disabled frustum culling on overlay objects to keep them in view when target is found.
 - `2025-11-20 14:52 JST` — Redeployed overlay-orientation fix; latest unique: https://691eac3a9eb1a6b697dbdaff--door-usage-ar-20251120.netlify.app.
+- `2025-11-20 14:56 JST` — Simplified overlay transforms (Z-offset only) and added console logging on targetFound for debugging; redeployed (unique: https://691eada3b565a3a139ee0ac3--door-usage-ar-20251120.netlify.app).
 
 ---
 
