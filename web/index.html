@@ -131,6 +131,11 @@
           }
           const mindarSystem = await waitForMindAR();
           await mindarSystem.start();
+          if (mindarSystem.video) {
+            mindarSystem.video.setAttribute("playsinline", "true");
+            mindarSystem.video.classList.add("mindar-video");
+            mindarSystem.video.style.zIndex = "0";
+          }
           overlay.classList.add("hidden");
           arStatus.textContent = "";
         } catch (err) {

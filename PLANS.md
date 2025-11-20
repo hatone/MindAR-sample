@@ -345,6 +345,8 @@ Add timestamps and notes as work progresses:
 - `2025-11-20 13:23 JST` — On iPhone Safari, camera permission prompt not appearing; suspect per-site camera blocked in Safari settings. Added troubleshooting steps to follow.
 - `2025-11-20 14:16 JST` — Investigated missing overlay despite visible camera feed; updated MindAR runtime to 1.2.5, forced flat double-sided materials, and sized the embedded scene/canvas to full viewport with target found/lost status messaging.
 - `2025-11-20 14:23 JST` — Redeployed to Netlify after overlay fixes; latest unique: https://691ea5b39eb1a6a705dbde1a--door-usage-ar-20251120.netlify.app.
+- `2025-11-20 14:30 JST` — Camera feed not visible; root cause was MindAR video element sitting behind the body background. Made body transparent, forced the video to fill the viewport with higher z-index, and re-tagged the video element after start.
+- `2025-11-20 14:31 JST` — Redeployed with video-layer fix; latest unique: https://691ea794d46757ad78315aa9--door-usage-ar-20251120.netlify.app.
 
 ---
 
@@ -365,6 +367,7 @@ Use this to record any unexpected behavior or learnings:
 - `2025-11-20 13:22 JST` — Redeployed with camera preflight; latest unique: https://691e97474c4c4283f4c0b4c6--door-usage-ar-20251120.netlify.app.
 - `2025-11-20 13:23 JST` — Camera permission prompt not showing on iPhone Safari; likely per-site camera blocked. Pending on-device Safari settings adjustment.
 - `2025-11-20 14:16 JST` — Overlay text not rendering; root cause traced to older MindAR CDN (1.2.2) plus single-sided standard materials. Updated runtime to 1.2.5, switched overlay materials to flat + double-sided, and ensured the AR canvas fills the viewport.
+- `2025-11-20 14:30 JST` — Camera feed hidden; MindAR video was behind the body background due to z-index stacking. Set body background transparent, pinned the video to the viewport with a dedicated class, and bumped its z-index above the background.
 
 Each entry should have:
 - Date/time.
@@ -419,6 +422,9 @@ Record important design decisions and why we made them:
 
 14. **Align runtime with compiled targets and force visible overlay materials**
     - Reason: AR overlay disappeared while camera feed played; bumping MindAR runtime to 1.2.5 (matching compiled `.mind`) and using flat double-sided materials keeps text visible without relying on lighting or face orientation.
+
+15. **Promote camera video above page background**
+    - Reason: MindAR injects the video at z-index -2; a non-transparent body background hid the feed. We make the body transparent and force the video to fill the viewport with a dedicated class and higher stacking order.
 
 Add more as they come up.
 
