@@ -162,33 +162,11 @@
         });
         targetEntity.addEventListener("targetFound", (e) => {
           console.log("FOUND", e);
-          const cameraEl = document.querySelector("a-camera");
-          const sceneRenderer = sceneEl.renderer;
-          const textEl = document.querySelector("a-text");
-          const planeEl = document.querySelector("a-plane");
-          if (cameraEl?.components?.camera?.camera) {
-            const cam = cameraEl.components.camera.camera;
-            console.log("Camera:", cameraEl.object3D.position, cam.near, cam.far);
-          }
-          if (targetEntity?.object3D) {
-            console.log("Target visible:", targetEntity.object3D.visible);
-            console.log("Target position:", targetEntity.object3D.position);
-            console.log("Target scale:", targetEntity.object3D.scale);
-          }
-          if (textEl?.object3D) {
-            console.log("Text visible:", textEl.object3D.visible);
-            console.log("Text position:", textEl.object3D.position);
-          }
-          if (planeEl?.object3D) {
-            console.log("Plane visible:", planeEl.object3D.visible);
-            console.log("Plane position:", planeEl.object3D.position);
-          }
-          if (sceneRenderer) {
-            console.log("Renderer:", sceneRenderer.sortObjects, sceneRenderer.autoClear);
-          }
+          targetEntity.object3D.visible = true;
           arStatus.textContent = "Door detected. Overlay locked.";
         });
         targetEntity.addEventListener("targetLost", () => {
+          targetEntity.object3D.visible = false;
           arStatus.textContent = "Searching for the door target…";
         });
       }
