@@ -40,7 +40,7 @@
 
     <a-entity mindar-image-target="targetIndex: 0" scale="1.25 1.25 1.25">
       <a-plane
-        position="0 0 -0.05"
+        position="0 0 -0.32"
         width="1.6"
         height="0.9"
         material="color: #0f172a; opacity: 0.72; transparent: true; shader: flat; side: double"
@@ -53,7 +53,7 @@
         width="1.4"
         color="#f8fafc"
         side="double"
-        position="0 0 -0.03"
+        position="0 0 -0.28"
         visible="true">
       </a-text>
     </a-entity>
@@ -190,6 +190,7 @@
         targetEntity.addEventListener("targetFound", (e) => {
           console.log("FOUND", e);
           targetEntity.object3D.visible = true;
+          sceneEl.object3D.updateMatrixWorld(true);
           const sceneRenderer = sceneEl.renderer;
           if (cameraEl?.components?.camera?.camera) {
             const cam = cameraEl.components.camera.camera;
