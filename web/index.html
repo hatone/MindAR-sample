@@ -226,25 +226,32 @@
             planeEl.setAttribute("visible", true);
             if (planeEl.object3D) planeEl.object3D.visible = true;
           }
-          
-          // マトリックスを更新
-          sceneEl.object3D.updateMatrixWorld(true);
-          
-          // デバッグ情報
-          if (debugInfo) {
+          // マトリックスが安定するのを待ってからトランスフォームを取得
+          setTimeout(() => {
+            sceneEl.object3D.updateMatrixWorld(true);
+
             const tgtPos = targetEntity?.object3D?.position;
             const txtPos = textEl?.object3D?.position;
             const plPos = planeEl?.object3D?.position;
-            debugInfo.textContent = `FOUND! Tgt:(${tgtPos?.x?.toFixed(2)},${tgtPos?.y?.toFixed(2)},${tgtPos?.z?.toFixed(2)}) Text:(${txtPos?.x?.toFixed(2)},${txtPos?.y?.toFixed(2)},${txtPos?.z?.toFixed(2)})`;
-          }
-          
-          console.log("Overlay visibility set:", {
-            target: targetEntity.object3D.visible,
-            text: textEl?.object3D?.visible,
-            plane: planeEl?.object3D?.visible
-          });
-          
-          arStatus.textContent = "✓ Door detected. Overlay visible.";
+            const tgtWorld = targetEntity?.object3D?.getWorldPosition(new AFRAME.THREE.Vector3());
+            const txtWorld = textEl?.object3D?.getWorldPosition(new AFRAME.THREE.Vector3());
+            const plWorld = planeEl?.object3D?.getWorldPosition(new AFRAME.THREE.Vector3());
+
+            console.log("Overlay visibility set:", {
+              target: targetEntity.object3D.visible,
+              text: textEl?.object3D?.visible,
+              plane: planeEl?.object3D?.visible
+            });
+            console.log("Target local/world:", tgtPos, tgtWorld);
+            console.log("Text local/world:", txtPos, txtWorld);
+            console.log("Plane local/world:", plPos, plWorld);
+
+            if (debugInfo) {
+              debugInfo.textContent = `FOUND! Tgt:(${tgtPos?.x?.toFixed(2)},${tgtPos?.y?.toFixed(2)},${tgtPos?.z?.toFixed(2)}) Text:(${txtPos?.x?.toFixed(2)},${txtPos?.y?.toFixed(2)},${txtPos?.z?.toFixed(2)})`;
+            }
+
+            arStatus.textContent = "✓ Door detected. Overlay visible.";
+          }, 150); // wait for pose to settle to avoid NaN/huge values
         });
         targetEntity.addEventListener("targetLost", () => {
           console.log("TARGET LOST");
