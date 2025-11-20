@@ -356,6 +356,7 @@ Add timestamps and notes as work progresses:
 - `2025-11-20 15:58 JST` — Restored detailed targetFound debug logging (camera/target/text/plane/renderer) per request; redeployed (unique: https://691ebbbf4c4c42d8cbc0b4aa--door-usage-ar-20251120.netlify.app).
 - `2025-11-20 16:00 JST` — Lowered camera near clipping (0.01) and limited far to 1000 after MindAR start to prevent overlays from being clipped when target is close; redeployed (unique: https://691ebd5687d0b0c955495851--door-usage-ar-20251120.netlify.app).
 - `2025-11-20 16:10 JST` — Added more debug logging (world positions, projection slice) and disabled plane depthTest/raised renderOrder to avoid hiding; redeployed (unique: https://691ebed7579081e052e95583--door-usage-ar-20251120.netlify.app).
+- `2025-11-20 16:18 JST` — Shifted overlay negatively along Z (toward camera) and added world/quaternion/debug overlay text to track positions; redeployed (unique: https://691ec04488b6cfa6aee0dd4d--door-usage-ar-20251120.netlify.app).
 
 ---
 

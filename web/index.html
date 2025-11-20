@@ -40,7 +40,7 @@
 
     <a-entity mindar-image-target="targetIndex: 0" scale="1.25 1.25 1.25">
       <a-plane
-        position="0 0 0.02"
+        position="0 0 -0.05"
         width="1.6"
         height="0.9"
         material="color: #0f172a; opacity: 0.72; transparent: true; shader: flat; side: double"
@@ -53,11 +53,13 @@
         width="1.4"
         color="#f8fafc"
         side="double"
-        position="0 0 0.04"
+        position="0 0 -0.03"
         visible="true">
       </a-text>
     </a-entity>
   </a-scene>
+
+  <div id="debug-info" class="note"></div>
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
@@ -70,6 +72,7 @@
       const cameraEl = document.querySelector("a-camera");
       const textEl = document.querySelector("a-text");
       const planeEl = document.querySelector("a-plane");
+      const debugInfo = document.getElementById("debug-info");
 
       const checkMindFile = async () => {
         try {
@@ -193,6 +196,7 @@
             console.log("Camera:", cameraEl.object3D.position, cam.near, cam.far);
             console.log("Camera proj[0..3]:", cam.projectionMatrix.elements.slice(0, 4));
             console.log("Camera world pos:", cameraEl.object3D.getWorldPosition(new AFRAME.THREE.Vector3()));
+            console.log("Camera quaternion:", cameraEl.object3D.quaternion);
           }
           if (targetEntity?.object3D) {
             console.log("Target visible:", targetEntity.object3D.visible);
@@ -200,19 +204,29 @@
             console.log("Target scale:", targetEntity.object3D.scale);
             console.log("Target world pos:", targetEntity.object3D.getWorldPosition(new AFRAME.THREE.Vector3()));
             console.log("Target world matrix[12..15]:", targetEntity.object3D.matrixWorld.elements.slice(12, 16));
+            console.log("Target quaternion:", targetEntity.object3D.quaternion);
           }
           if (textEl?.object3D) {
             console.log("Text visible:", textEl.object3D.visible);
             console.log("Text position:", textEl.object3D.position);
             console.log("Text world pos:", textEl.object3D.getWorldPosition(new AFRAME.THREE.Vector3()));
+            console.log("Text quaternion:", textEl.object3D.quaternion);
           }
           if (planeEl?.object3D) {
             console.log("Plane visible:", planeEl.object3D.visible);
             console.log("Plane position:", planeEl.object3D.position);
             console.log("Plane world pos:", planeEl.object3D.getWorldPosition(new AFRAME.THREE.Vector3()));
+            console.log("Plane quaternion:", planeEl.object3D.quaternion);
+            console.log("Plane world matrix[12..15]:", planeEl.object3D.matrixWorld.elements.slice(12, 16));
           }
           if (sceneRenderer) {
             console.log("Renderer:", sceneRenderer.sortObjects, sceneRenderer.autoClear);
+          }
+          if (debugInfo) {
+            const tgtPos = targetEntity?.object3D?.position;
+            const txtPos = textEl?.object3D?.position;
+            const plPos = planeEl?.object3D?.position;
+            debugInfo.textContent = `Cam z:${cameraEl?.object3D?.position?.z ?? "?"} tgt z:${tgtPos?.z ?? "?"} text z:${txtPos?.z ?? "?"} plane z:${plPos?.z ?? "?"}`;
           }
           arStatus.textContent = "Door detected. Overlay locked.";
         });
