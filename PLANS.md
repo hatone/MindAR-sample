@@ -363,6 +363,7 @@ Add timestamps and notes as work progresses:
 - `2025-11-20 16:50 JST` — Added `vercel.json` to serve `/web` directly from Vercel as a static site; documented Vercel deploy steps in README.
 - `2025-11-20 17:05 JST` — Rebuilt the AR scene using MindAR Three.js (removed A-Frame), with canvas-text overlay, lights, and anchor-based visibility; pending successful deployment due to Netlify auth errors.
 - `2025-11-20 17:10 JST` — Netlify deploy succeeded after account upgrade; latest unique: https://691ecc9a711b360654403634--door-usage-ar-20251120.netlify.app.
+- `2025-11-20 17:30 JST` — Fixed MindAR CDN module resolution by adding an import map for Three.js (restores Start AR flow after the A-Frame → Three refactor).
 
 ---
 
