@@ -38,12 +38,12 @@
 
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-    <a-entity mindar-image-target="targetIndex: 0" scale="1.25 1.25 1.25">
+    <a-entity mindar-image-target="targetIndex: 0" scale="1.25 1.25 1.25" visible="false">
       <a-plane
-        position="0 0 -0.32"
+        position="0 0.3 0"
         width="1.6"
         height="0.9"
-        material="color: #0f172a; opacity: 0.72; transparent: true; shader: flat; side: double"
+        material="color: #0f172a; opacity: 0.85; transparent: true; shader: flat; side: double"
         visible="true">
       </a-plane>
       <a-text
@@ -53,7 +53,7 @@
         width="1.4"
         color="#f8fafc"
         side="double"
-        position="0 0 -0.28"
+        position="0 0.3 0.01"
         visible="true">
       </a-text>
     </a-entity>
@@ -167,72 +167,103 @@
 
       if (targetEntity) {
         targetEntity.addEventListener("loaded", () => {
+          // 初期状態では非表示
+          targetEntity.setAttribute("visible", false);
+          targetEntity.object3D.visible = false;
+          
+          // すべての子要素をトラバースして設定
           targetEntity.object3D.traverse((obj) => {
             obj.frustumCulled = false;
-            if (obj.material) obj.renderOrder = 2;
+            if (obj.material) {
+              obj.material.needsUpdate = true;
+              obj.renderOrder = 10;
+            }
           });
+          
+          // プレーンのマテリアル設定を強化
           if (planeEl) {
             planeEl.setAttribute("material", {
               color: "#0f172a",
-              opacity: 0.72,
+              opacity: 0.85,
               transparent: true,
               shader: "flat",
               side: "double",
               depthTest: false
             });
-            if (planeEl.object3D) planeEl.object3D.renderOrder = 10;
+            if (planeEl.object3D) {
+              planeEl.object3D.renderOrder = 10;
+              planeEl.object3D.frustumCulled = false;
+            }
           }
+          
+          // テキストの設定を強化
           if (textEl?.object3D) {
             textEl.object3D.renderOrder = 11;
             textEl.object3D.frustumCulled = false;
+            // テキストマテリアルも確実に更新
+            textEl.object3D.traverse((obj) => {
+              if (obj.material) {
+                obj.material.needsUpdate = true;
+                obj.renderOrder = 11;
+              }
+            });
           }
+          
+          console.log("Target entity loaded, initial visibility: false");
         });
         targetEntity.addEventListener("targetFound", (e) => {
-          console.log("FOUND", e);
+          console.log("TARGET FOUND", e);
+          // 親エンティティと子要素の可視性を確実に設定
+          targetEntity.setAttribute("visible", true);
           targetEntity.object3D.visible = true;
+          
+          // 子要素も明示的に表示
+          if (textEl) {
+            textEl.setAttribute("visible", true);
+            if (textEl.object3D) textEl.object3D.visible = true;
+          }
+          if (planeEl) {
+            planeEl.setAttribute("visible", true);
+            if (planeEl.object3D) planeEl.object3D.visible = true;
+          }
+          
+          // マトリックスを更新
           sceneEl.object3D.updateMatrixWorld(true);
-          const sceneRenderer = sceneEl.renderer;
-          if (cameraEl?.components?.camera?.camera) {
-            const cam = cameraEl.components.camera.camera;
-            console.log("Camera:", cameraEl.object3D.position, cam.near, cam.far);
-            console.log("Camera proj[0..3]:", cam.projectionMatrix.elements.slice(0, 4));
-            console.log("Camera world pos:", cameraEl.object3D.getWorldPosition(new AFRAME.THREE.Vector3()));
-            console.log("Camera quaternion:", cameraEl.object3D.quaternion);
-          }
-          if (targetEntity?.object3D) {
-            console.log("Target visible:", targetEntity.object3D.visible);
-            console.log("Target position:", targetEntity.object3D.position);
-            console.log("Target scale:", targetEntity.object3D.scale);
-            console.log("Target world pos:", targetEntity.object3D.getWorldPosition(new AFRAME.THREE.Vector3()));
-            console.log("Target world matrix[12..15]:", targetEntity.object3D.matrixWorld.elements.slice(12, 16));
-            console.log("Target quaternion:", targetEntity.object3D.quaternion);
-          }
-          if (textEl?.object3D) {
-            console.log("Text visible:", textEl.object3D.visible);
-            console.log("Text position:", textEl.object3D.position);
-            console.log("Text world pos:", textEl.object3D.getWorldPosition(new AFRAME.THREE.Vector3()));
-            console.log("Text quaternion:", textEl.object3D.quaternion);
-          }
-          if (planeEl?.object3D) {
-            console.log("Plane visible:", planeEl.object3D.visible);
-            console.log("Plane position:", planeEl.object3D.position);
-            console.log("Plane world pos:", planeEl.object3D.getWorldPosition(new AFRAME.THREE.Vector3()));
-            console.log("Plane quaternion:", planeEl.object3D.quaternion);
-            console.log("Plane world matrix[12..15]:", planeEl.object3D.matrixWorld.elements.slice(12, 16));
-          }
-          if (sceneRenderer) {
-            console.log("Renderer:", sceneRenderer.sortObjects, sceneRenderer.autoClear);
-          }
+          
+          // デバッグ情報
           if (debugInfo) {
             const tgtPos = targetEntity?.object3D?.position;
             const txtPos = textEl?.object3D?.position;
             const plPos = planeEl?.object3D?.position;
-            debugInfo.textContent = `Cam z:${cameraEl?.object3D?.position?.z ?? "?"} tgt z:${tgtPos?.z ?? "?"} text z:${txtPos?.z ?? "?"} plane z:${plPos?.z ?? "?"}`;
+            debugInfo.textContent = `FOUND! Tgt:(${tgtPos?.x?.toFixed(2)},${tgtPos?.y?.toFixed(2)},${tgtPos?.z?.toFixed(2)}) Text:(${txtPos?.x?.toFixed(2)},${txtPos?.y?.toFixed(2)},${txtPos?.z?.toFixed(2)})`;
           }
-          arStatus.textContent = "Door detected. Overlay locked.";
+          
+          console.log("Overlay visibility set:", {
+            target: targetEntity.object3D.visible,
+            text: textEl?.object3D?.visible,
+            plane: planeEl?.object3D?.visible
+          });
+          
+          arStatus.textContent = "✓ Door detected. Overlay visible.";
         });
         targetEntity.addEventListener("targetLost", () => {
+          console.log("TARGET LOST");
+          targetEntity.setAttribute("visible", false);
           targetEntity.object3D.visible = false;
+          
+          if (textEl) {
+            textEl.setAttribute("visible", false);
+            if (textEl.object3D) textEl.object3D.visible = false;
+          }
+          if (planeEl) {
+            planeEl.setAttribute("visible", false);
+            if (planeEl.object3D) planeEl.object3D.visible = false;
+          }
+          
+          if (debugInfo) {
+            debugInfo.textContent = "Searching...";
+          }
+          
           arStatus.textContent = "Searching for the door target…";
         });
       }
