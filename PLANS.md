@@ -344,6 +344,7 @@ Add timestamps and notes as work progresses:
 - `2025-11-20 13:58 JST` — Enabled renderer alpha + embedded scene (to ensure video feed shows behind overlays); redeployed (unique: https://691ea0b332e98da84819b7d7--door-usage-ar-20251120.netlify.app).
 - `2025-11-20 13:23 JST` — On iPhone Safari, camera permission prompt not appearing; suspect per-site camera blocked in Safari settings. Added troubleshooting steps to follow.
 - `2025-11-20 14:16 JST` — Investigated missing overlay despite visible camera feed; updated MindAR runtime to 1.2.5, forced flat double-sided materials, and sized the embedded scene/canvas to full viewport with target found/lost status messaging.
+- `2025-11-20 14:23 JST` — Redeployed to Netlify after overlay fixes; latest unique: https://691ea5b39eb1a6a705dbde1a--door-usage-ar-20251120.netlify.app.
 
 ---
 
