@@ -347,6 +347,7 @@ Add timestamps and notes as work progresses:
 - `2025-11-20 14:23 JST` — Redeployed to Netlify after overlay fixes; latest unique: https://691ea5b39eb1a6a705dbde1a--door-usage-ar-20251120.netlify.app.
 - `2025-11-20 14:30 JST` — Camera feed not visible; root cause was MindAR video element sitting behind the body background. Made body transparent, forced the video to fill the viewport with higher z-index, and re-tagged the video element after start.
 - `2025-11-20 14:31 JST` — Redeployed with video-layer fix; latest unique: https://691ea794d46757ad78315aa9--door-usage-ar-20251120.netlify.app.
+- `2025-11-20 14:39 JST` — AR overlays not showing (target not detected). Relaxed MindAR tolerances and removed !important sizing overrides that conflicted with MindAR resizing; redeployed (unique: https://691ea95f4c4c42ab83c0b4e5--door-usage-ar-20251120.netlify.app).
 
 ---
 
@@ -368,6 +369,7 @@ Use this to record any unexpected behavior or learnings:
 - `2025-11-20 13:23 JST` — Camera permission prompt not showing on iPhone Safari; likely per-site camera blocked. Pending on-device Safari settings adjustment.
 - `2025-11-20 14:16 JST` — Overlay text not rendering; root cause traced to older MindAR CDN (1.2.2) plus single-sided standard materials. Updated runtime to 1.2.5, switched overlay materials to flat + double-sided, and ensured the AR canvas fills the viewport.
 - `2025-11-20 14:30 JST` — Camera feed hidden; MindAR video was behind the body background due to z-index stacking. Set body background transparent, pinned the video to the viewport with a dedicated class, and bumped its z-index above the background.
+- `2025-11-20 14:39 JST` — Target detection flaky; suspect MindAR resizing overrides and strict CF filter. Relaxed detection tolerances and removed CSS !important overrides to let MindAR handle sizing while keeping video/canvas layering explicit.
 
 Each entry should have:
 - Date/time.
