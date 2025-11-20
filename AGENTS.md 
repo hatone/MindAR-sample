@@ -1,0 +1,85 @@
+# AGENTS.md
+
+This repository is designed to be used with AI coding agents (e.g. Codex).
+You must follow the instructions in this file when working in this repo.
+
+## 1. How you should work in this repo
+
+- Before making any changes, **scan the repository** to understand:
+  - What languages and frameworks are used
+  - How apps are structured (folders, entry points)
+  - How code is built, tested, and run (scripts, Makefiles, etc.)
+
+- Prefer making **small, consistent, reversible changes**:
+  - Keep commits logically grouped.
+  - Avoid large, cross-cutting refactors unless explicitly requested.
+
+- Always keep code:
+  - **Readable** (clear names, comments where non-obvious)
+  - **Testable** (add / update tests when behaviour changes)
+  - **Documented** (update README or docs if behaviour or usage changes)
+
+## 2. When and how to use ExecPlans
+
+For any task that is:
+- Multi-step, or
+- Expected to take more than ~30–60 minutes of focused work, or
+- Touches multiple modules / services,
+
+you **must** use an ExecPlan.
+
+An ExecPlan is a detailed plan that explains:
+- What we are trying to achieve (big picture)
+- How it fits into the existing repo
+- The sequence of concrete steps you will take
+- How we will validate the result
+
+### 2.1. Where ExecPlans live
+
+- High-level guidance for ExecPlans is in `PLANS.md`.
+- Concrete, task-specific ExecPlans may live in:
+  - `PLANS.md` (for simple repos), or
+  - `docs/exec-plans/*.md` (for specific features or projects).
+
+If you are asked to work on a specific feature and an ExecPlan file already exists for it, **read and follow that file** as the source of truth.
+
+### 2.2. Your responsibilities when executing an ExecPlan
+
+When you execute an ExecPlan, you must:
+
+1. **Read the whole ExecPlan first**, not just the first section.
+2. Follow the milestones and steps in order, unless the plan explicitly says otherwise.
+3. Keep these sections up to date as a **living document**:
+   - `Progress`
+   - `Surprises & Discoveries`
+   - `Decision Log`
+   - `Outcomes & Retrospective`
+4. At the end of each milestone:
+   - Summarise what you did.
+   - List which files changed and why.
+   - Note any follow-up work or open questions.
+
+Do **not** ask “what should I do next?” after each small change.  
+Instead, execute the current milestone to completion (as described in the ExecPlan), then report back.
+
+### 2.3. If there is no ExecPlan yet
+
+If you are asked to do a complex task and there is no ExecPlan:
+
+1. Create a new ExecPlan file, for example:
+   - `docs/exec-plans/<short-feature-name>.md`
+2. Use the structure and examples from `PLANS.md` to write the plan.
+3. Once the ExecPlan is written, execute it as described above.
+
+Do not start large, ambiguous work without a written ExecPlan.
+
+## 3. Safety, testing, and validation
+
+- Prefer running tests and linters before and after your changes.
+- If no tests exist, consider adding small, focused tests when you change behaviour.
+- Always describe **how a human can verify** that the feature works
+  (commands to run, URLs to open, what to look for).
+
+If something is unclear in the codebase or the instructions conflict:
+- Document the confusion in the ExecPlan’s `Surprises & Discoveries` and `Decision Log`.
+- Choose the least risky, most reversible option.

@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Door Usage AR Overlay</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+</head>
+<body>
+  <div class="overlay" id="start-overlay">
+    <div class="panel">
+      <h1>Door Usage AR Overlay</h1>
+      <p>Tap “Start AR” and point your camera at the target door.</p>
+      <p class="note">Requires camera permission. Use HTTPS on mobile; HTTP is fine for desktop testing.</p>
+      <p id="asset-status" class="note warn">Checking for ./assets/door-targets.mind …</p>
+      <p id="ar-status" class="note"></p>
+      <button id="start-button" disabled>Start AR</button>
+    </div>
+  </div>
+
+  <a-scene
+    class="ar-scene"
+    mindar-image="imageTargetSrc: ./assets/door-targets.mind; autoStart: false;"
+    embedded
+    color-space="sRGB"
+    renderer="colorManagement: true, alpha: true"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false">
+
+    <a-assets>
+      <img id="door-ref" src="./assets/door-reference.jpg" crossorigin="anonymous">
+    </a-assets>
+
+    <a-entity light="type: ambient; intensity: 1"></a-entity>
+    <a-entity light="type: directional; intensity: 0.8; position: 0 2 1"></a-entity>
+
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+    <a-entity mindar-image-target="targetIndex: 0">
+      <a-plane
+        position="0 0 0"
+        rotation="0 0 0"
+        width="1.6"
+        height="0.9"
+        material="color: #0f172a; opacity: 0.72; transparent: true; shader: flat; side: double">
+      </a-plane>
+      <a-text
+        value="ドアの使い方：\n1. カードキーをここにタッチ\n2. ランプが緑になったら開けてください"
+        align="center"
+        wrap-count="24"
+        width="1.4"
+        color="#f8fafc"
+        side="double"
+        position="0 0 0.01"
+        rotation="0 0 0">
+      </a-text>
+    </a-entity>
+  </a-scene>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const startButton = document.getElementById("start-button");
+      const overlay = document.getElementById("start-overlay");
+      const sceneEl = document.querySelector("a-scene");
+      const assetStatus = document.getElementById("asset-status");
+      const arStatus = document.getElementById("ar-status");
+      const targetEntity = document.querySelector("[mindar-image-target]");
+
+      const checkMindFile = async () => {
+        try {
+          const res = await fetch("./assets/door-targets.mind", { method: "HEAD" });
+          if (!res.ok) throw new Error("target file missing");
+          const size = res.headers.get("content-length");
+          assetStatus.textContent = `Target file detected (${size ? `${(Number(size) / 1024).toFixed(1)} KB` : "size unknown"})`;
+          assetStatus.classList.remove("warn");
+          startButton.disabled = false;
+        } catch (err) {
+          assetStatus.textContent = "Missing: ./assets/door-targets.mind — generate with the MindAR Image Target Compiler and place it under /web/assets.";
+          assetStatus.classList.add("warn");
+          startButton.disabled = true;
+        }
+      };
+      checkMindFile();
+
+      const ensureCameraAccess = async () => {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          throw new Error("Camera API unsupported. Use a modern browser.");
+        }
+        const constraints = {
+          video: { facingMode: { ideal: "environment" } },
+          audio: false
+        };
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        // stop immediately; MindAR will request again
+        stream.getTracks().forEach((t) => t.stop());
+      };
+
+      const waitForMindAR = () =>
+        new Promise((resolve, reject) => {
+          const ready = () => {
+            const system = sceneEl.systems && sceneEl.systems["mindar-image-system"];
+            if (system && typeof system.start === "function") {
+              resolve(system);
+            } else {
+              reject(new Error("MindAR system not initialized"));
+            }
+          };
+          if (sceneEl.systems && sceneEl.systems["mindar-image-system"] && typeof sceneEl.systems["mindar-image-system"].start === "function") {
+            resolve(sceneEl.systems["mindar-image-system"]);
+          } else {
+            const timeout = setTimeout(() => reject(new Error("MindAR system init timeout")), 8000);
+            sceneEl.addEventListener(
+              "renderstart",
+              () => {
+                clearTimeout(timeout);
+                ready();
+              },
+              { once: true }
+            );
+          }
+        });
+
+      const startAR = async () => {
+        arStatus.textContent = "Starting AR…";
+        try {
+          await ensureCameraAccess();
+          if (!sceneEl.hasLoaded) {
+            await new Promise((resolve) => sceneEl.addEventListener("loaded", resolve, { once: true }));
+          }
+          const mindarSystem = await waitForMindAR();
+          await mindarSystem.start();
+          overlay.classList.add("hidden");
+          arStatus.textContent = "";
+        } catch (err) {
+          arStatus.textContent = `Failed to start AR: ${err?.message || "Camera blocked"}. Please allow camera access and reload.`;
+          console.error("AR start error", err);
+        }
+      };
+
+      sceneEl.addEventListener("arReady", () => {
+        arStatus.textContent = "Camera ready. Point at the door target.";
+      });
+
+      sceneEl.addEventListener("arError", (e) => {
+        arStatus.textContent = "Camera access was blocked. Please allow camera and reload.";
+        console.error("AR error", e);
+      });
+
+      if (targetEntity) {
+        targetEntity.addEventListener("targetFound", () => {
+          arStatus.textContent = "Door detected. Overlay locked.";
+        });
+        targetEntity.addEventListener("targetLost", () => {
+          arStatus.textContent = "Searching for the door target…";
+        });
+      }
+
+      startButton.addEventListener("click", async () => {
+        await startAR();
+      });
+    });
+  </script>
+</body>
+</html>

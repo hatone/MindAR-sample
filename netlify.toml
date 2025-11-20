@@ -1,0 +1,4 @@
+[build]
+  publish = "web"
+
+# Static site; no build command needed. Override with NETLIFY_BUILD_COMMAND if required.
