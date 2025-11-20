@@ -364,6 +364,8 @@ Add timestamps and notes as work progresses:
 - `2025-11-20 17:05 JST` — Rebuilt the AR scene using MindAR Three.js (removed A-Frame), with canvas-text overlay, lights, and anchor-based visibility; pending successful deployment due to Netlify auth errors.
 - `2025-11-20 17:10 JST` — Netlify deploy succeeded after account upgrade; latest unique: https://691ecc9a711b360654403634--door-usage-ar-20251120.netlify.app.
 - `2025-11-20 17:30 JST` — Fixed MindAR CDN module resolution by adding an import map for Three.js (restores Start AR flow after the A-Frame → Three refactor).
+- `2025-11-20 18:04 JST` — Restored project files (web app, assets, configs) following ExecPlan and verified ready state for deployment.
+- `2025-11-20 18:04 JST` — Redeployed to Netlify production; latest unique: https://691ed99c69ce69ed5be0ad47--door-usage-ar-20251120.netlify.app.
 
 ---
 
@@ -518,4 +520,4 @@ The plan is intentionally small but complete: **one door, one overlay, end-to-en
 - `2025-11-20 13:20 JST` — Added `netlify.toml` (publish=web) to simplify Netlify deploys for M4 testing; hosting still manual/pending.
 - `2025-11-20 13:25 JST` — Hosting not run in this environment; next action is a manual HTTPS deploy (e.g., Netlify) and on-device validation.
 - `2025-11-20 13:02 JST` — Deploy attempt with provided NETLIFY_AUTH_TOKEN failed (401); need a valid token or login to proceed.
-- `2025-11-20 13:35 JST` — Deployed to Netlify production: https://door-usage-ar-20251120.netlify.app (unique: https://691e94835ac183801a0061af--door-usage-ar-20251120.netlify.app).
+- `2025-11-20 18:04 JST` — Files restored to match ExecPlan artifacts and redeployed to Netlify (unique: https://691ed99c69ce69ed5be0ad47--door-usage-ar-20251120.netlify.app); iPhone validation still pending.
