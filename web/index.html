@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Door Usage AR Overlay</title>
   <link rel="stylesheet" href="./styles.css">
-  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 </head>
 <body>
   <div class="overlay" id="start-overlay">
@@ -20,265 +18,159 @@
     </div>
   </div>
 
-  <a-scene
-    class="ar-scene"
-    mindar-image="imageTargetSrc: ./assets/door-targets.mind; autoStart: false; warmupTolerance: 5; missTolerance: 10; filterMinCF: 0.0001;"
-    embedded
-    color-space="sRGB"
-    renderer="colorManagement: true, alpha: true"
-    vr-mode-ui="enabled: false"
-    device-orientation-permission-ui="enabled: false">
+  <div id="ar-container" class="ar-container"></div>
+  <div id="debug-info" class="note debug"></div>
 
-    <a-assets>
-      <img id="door-ref" src="./assets/door-reference.jpg" crossorigin="anonymous">
-    </a-assets>
+  <script type="module">
+    import { MindARThree } from "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js";
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
-    <a-entity light="type: ambient; intensity: 1"></a-entity>
-    <a-entity light="type: directional; intensity: 0.8; position: 0 2 1"></a-entity>
+    const startButton = document.getElementById("start-button");
+    const overlayEl = document.getElementById("start-overlay");
+    const assetStatus = document.getElementById("asset-status");
+    const arStatus = document.getElementById("ar-status");
+    const debugInfo = document.getElementById("debug-info");
+    const container = document.getElementById("ar-container");
 
-    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+    let mindarThree;
+    let overlayGroup;
 
-    <a-entity mindar-image-target="targetIndex: 0" scale="1.25 1.25 1.25" visible="false">
-      <a-plane
-        position="0 0.3 0"
-        width="1.6"
-        height="0.9"
-        material="color: #0f172a; opacity: 0.85; transparent: true; shader: flat; side: double"
-        visible="true">
-      </a-plane>
-      <a-text
-        value="ドアの使い方：\n1. カードキーをここにタッチ\n2. ランプが緑になったら開けてください"
-        align="center"
-        wrap-count="24"
-        width="1.4"
-        color="#f8fafc"
-        side="double"
-        position="0 0.3 0.01"
-        visible="true">
-      </a-text>
-    </a-entity>
-  </a-scene>
-
-  <div id="debug-info" class="note"></div>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const startButton = document.getElementById("start-button");
-      const overlay = document.getElementById("start-overlay");
-      const sceneEl = document.querySelector("a-scene");
-      const assetStatus = document.getElementById("asset-status");
-      const arStatus = document.getElementById("ar-status");
-      const targetEntity = document.querySelector("[mindar-image-target]");
-      const cameraEl = document.querySelector("a-camera");
-      const textEl = document.querySelector("a-text");
-      const planeEl = document.querySelector("a-plane");
-      const debugInfo = document.getElementById("debug-info");
-
-      const checkMindFile = async () => {
-        try {
-          const res = await fetch("./assets/door-targets.mind", { method: "HEAD" });
-          if (!res.ok) throw new Error("target file missing");
-          const size = res.headers.get("content-length");
-          assetStatus.textContent = `Target file detected (${size ? `${(Number(size) / 1024).toFixed(1)} KB` : "size unknown"})`;
-          assetStatus.classList.remove("warn");
-          startButton.disabled = false;
-        } catch (err) {
-          assetStatus.textContent = "Missing: ./assets/door-targets.mind — generate with the MindAR Image Target Compiler and place it under /web/assets.";
-          assetStatus.classList.add("warn");
-          startButton.disabled = true;
-        }
-      };
-      checkMindFile();
-
-      const ensureCameraAccess = async () => {
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          throw new Error("Camera API unsupported. Use a modern browser.");
-        }
-        const constraints = {
-          video: { facingMode: { ideal: "environment" } },
-          audio: false
-        };
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        // stop immediately; MindAR will request again
-        stream.getTracks().forEach((t) => t.stop());
-      };
-
-      const waitForMindAR = () =>
-        new Promise((resolve, reject) => {
-          const ready = () => {
-            const system = sceneEl.systems && sceneEl.systems["mindar-image-system"];
-            if (system && typeof system.start === "function") {
-              resolve(system);
-            } else {
-              reject(new Error("MindAR system not initialized"));
-            }
-          };
-          if (sceneEl.systems && sceneEl.systems["mindar-image-system"] && typeof sceneEl.systems["mindar-image-system"].start === "function") {
-            resolve(sceneEl.systems["mindar-image-system"]);
-          } else {
-            const timeout = setTimeout(() => reject(new Error("MindAR system init timeout")), 8000);
-            sceneEl.addEventListener(
-              "renderstart",
-              () => {
-                clearTimeout(timeout);
-                ready();
-              },
-              { once: true }
-            );
-          }
-        });
-
-      const startAR = async () => {
-        arStatus.textContent = "Starting AR…";
-        try {
-          await ensureCameraAccess();
-          if (!sceneEl.hasLoaded) {
-            await new Promise((resolve) => sceneEl.addEventListener("loaded", resolve, { once: true }));
-          }
-          const mindarSystem = await waitForMindAR();
-          await mindarSystem.start();
-          if (mindarSystem.video) {
-            mindarSystem.video.setAttribute("playsinline", "true");
-            mindarSystem.video.classList.add("mindar-video");
-            mindarSystem.video.style.zIndex = "0";
-          }
-          if (cameraEl?.getObject3D("camera")) {
-            const camObj = cameraEl.getObject3D("camera");
-            camObj.near = 0.01;
-            camObj.far = 1000;
-            camObj.updateProjectionMatrix();
-          }
-          overlay.classList.add("hidden");
-          arStatus.textContent = "";
-        } catch (err) {
-          arStatus.textContent = `Failed to start AR: ${err?.message || "Camera blocked"}. Please allow camera access and reload.`;
-          console.error("AR start error", err);
-        }
-      };
-
-      sceneEl.addEventListener("arReady", () => {
-        arStatus.textContent = "Camera ready. Point at the door target.";
-      });
-
-      sceneEl.addEventListener("arError", (e) => {
-        arStatus.textContent = "Camera access was blocked. Please allow camera and reload.";
-        console.error("AR error", e);
-      });
-
-      if (targetEntity) {
-        targetEntity.addEventListener("loaded", () => {
-          // 初期状態では非表示
-          targetEntity.setAttribute("visible", false);
-          targetEntity.object3D.visible = false;
-          
-          // すべての子要素をトラバースして設定
-          targetEntity.object3D.traverse((obj) => {
-            obj.frustumCulled = false;
-            if (obj.material) {
-              obj.material.needsUpdate = true;
-              obj.renderOrder = 10;
-            }
-          });
-          
-          // プレーンのマテリアル設定を強化
-          if (planeEl) {
-            planeEl.setAttribute("material", {
-              color: "#0f172a",
-              opacity: 0.85,
-              transparent: true,
-              shader: "flat",
-              side: "double",
-              depthTest: false
-            });
-            if (planeEl.object3D) {
-              planeEl.object3D.renderOrder = 10;
-              planeEl.object3D.frustumCulled = false;
-            }
-          }
-          
-          // テキストの設定を強化
-          if (textEl?.object3D) {
-            textEl.object3D.renderOrder = 11;
-            textEl.object3D.frustumCulled = false;
-            // テキストマテリアルも確実に更新
-            textEl.object3D.traverse((obj) => {
-              if (obj.material) {
-                obj.material.needsUpdate = true;
-                obj.renderOrder = 11;
-              }
-            });
-          }
-          
-          console.log("Target entity loaded, initial visibility: false");
-        });
-        targetEntity.addEventListener("targetFound", (e) => {
-          console.log("TARGET FOUND", e);
-          // 親エンティティと子要素の可視性を確実に設定
-          targetEntity.setAttribute("visible", true);
-          targetEntity.object3D.visible = true;
-          
-          // 子要素も明示的に表示
-          if (textEl) {
-            textEl.setAttribute("visible", true);
-            if (textEl.object3D) textEl.object3D.visible = true;
-          }
-          if (planeEl) {
-            planeEl.setAttribute("visible", true);
-            if (planeEl.object3D) planeEl.object3D.visible = true;
-          }
-          // マトリックスが安定するのを待ってからトランスフォームを取得
-          setTimeout(() => {
-            sceneEl.object3D.updateMatrixWorld(true);
-
-            const tgtPos = targetEntity?.object3D?.position;
-            const txtPos = textEl?.object3D?.position;
-            const plPos = planeEl?.object3D?.position;
-            const tgtWorld = targetEntity?.object3D?.getWorldPosition(new AFRAME.THREE.Vector3());
-            const txtWorld = textEl?.object3D?.getWorldPosition(new AFRAME.THREE.Vector3());
-            const plWorld = planeEl?.object3D?.getWorldPosition(new AFRAME.THREE.Vector3());
-
-            console.log("Overlay visibility set:", {
-              target: targetEntity.object3D.visible,
-              text: textEl?.object3D?.visible,
-              plane: planeEl?.object3D?.visible
-            });
-            console.log("Target local/world:", tgtPos, tgtWorld);
-            console.log("Text local/world:", txtPos, txtWorld);
-            console.log("Plane local/world:", plPos, plWorld);
-
-            if (debugInfo) {
-              debugInfo.textContent = `FOUND! Tgt:(${tgtPos?.x?.toFixed(2)},${tgtPos?.y?.toFixed(2)},${tgtPos?.z?.toFixed(2)}) Text:(${txtPos?.x?.toFixed(2)},${txtPos?.y?.toFixed(2)},${txtPos?.z?.toFixed(2)})`;
-            }
-
-            arStatus.textContent = "✓ Door detected. Overlay visible.";
-          }, 150); // wait for pose to settle to avoid NaN/huge values
-        });
-        targetEntity.addEventListener("targetLost", () => {
-          console.log("TARGET LOST");
-          targetEntity.setAttribute("visible", false);
-          targetEntity.object3D.visible = false;
-          
-          if (textEl) {
-            textEl.setAttribute("visible", false);
-            if (textEl.object3D) textEl.object3D.visible = false;
-          }
-          if (planeEl) {
-            planeEl.setAttribute("visible", false);
-            if (planeEl.object3D) planeEl.object3D.visible = false;
-          }
-          
-          if (debugInfo) {
-            debugInfo.textContent = "Searching...";
-          }
-          
-          arStatus.textContent = "Searching for the door target…";
-        });
+    const checkMindFile = async () => {
+      try {
+        const res = await fetch("./assets/door-targets.mind", { method: "HEAD" });
+        if (!res.ok) throw new Error("target file missing");
+        const size = res.headers.get("content-length");
+        assetStatus.textContent = `Target file detected (${size ? `${(Number(size) / 1024).toFixed(1)} KB` : "size unknown"})`;
+        assetStatus.classList.remove("warn");
+        startButton.disabled = false;
+      } catch (err) {
+        assetStatus.textContent = "Missing: ./assets/door-targets.mind — generate with the MindAR Image Target Compiler and place it under /web/assets.";
+        assetStatus.classList.add("warn");
+        startButton.disabled = true;
       }
+    };
 
-      startButton.addEventListener("click", async () => {
-        await startAR();
+    const ensureCameraAccess = async () => {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("Camera API unsupported. Use a modern browser.");
+      }
+      const constraints = { video: { facingMode: { ideal: "environment" } }, audio: false };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      stream.getTracks().forEach((t) => t.stop());
+    };
+
+    const createTextTexture = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 1024;
+      canvas.height = 512;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#0f172a";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#f8fafc";
+      ctx.font = "48px 'Noto Sans JP', -apple-system, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      const lines = ["ドアの使い方：", "1. カードキーをここにタッチ", "2. ランプが緑になったら開けてください"];
+      lines.forEach((line, i) => {
+        ctx.fillText(line, canvas.width / 2, canvas.height / 2 - 70 + i * 70);
       });
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.encoding = THREE.sRGBEncoding;
+      return texture;
+    };
+
+    const buildOverlay = () => {
+      const group = new THREE.Group();
+      const bgMat = new THREE.MeshBasicMaterial({
+        color: 0x0f172a,
+        transparent: true,
+        opacity: 0.85,
+        side: THREE.DoubleSide,
+        depthTest: false
+      });
+      const bg = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.9), bgMat);
+      bg.position.set(0, 0.3, 0);
+      bg.renderOrder = 10;
+      group.add(bg);
+
+      const textTexture = createTextTexture();
+      const textMat = new THREE.MeshBasicMaterial({
+        map: textTexture,
+        transparent: true,
+        side: THREE.DoubleSide,
+        depthTest: false
+      });
+      const textPlane = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.7), textMat);
+      textPlane.position.set(0, 0.3, 0.01);
+      textPlane.renderOrder = 11;
+      group.add(textPlane);
+
+      group.visible = false;
+      return group;
+    };
+
+    const startAR = async () => {
+      arStatus.textContent = "Starting AR…";
+      try {
+        await ensureCameraAccess();
+        mindarThree = new MindARThree({
+          container,
+          imageTargetSrc: "./assets/door-targets.mind",
+          uiLoading: "no",
+          uiScanning: "no",
+          uiError: "no",
+          warmupTolerance: 5,
+          missTolerance: 10,
+          filterMinCF: 0.0001,
+          maxTrack: 1
+        });
+
+        const { renderer, scene, camera } = mindarThree;
+        renderer.setClearColor(0x000000, 0);
+        scene.environment = null;
+        scene.add(new THREE.AmbientLight(0xffffff, 1));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(0, 2, 1);
+        scene.add(dirLight);
+
+        const anchor = mindarThree.addAnchor(0);
+        overlayGroup = buildOverlay();
+        anchor.group.add(overlayGroup);
+
+        anchor.onTargetFound = () => {
+          overlayGroup.visible = true;
+          setTimeout(() => {
+            scene.updateMatrixWorld(true);
+            const overlayWorld = overlayGroup.getWorldPosition(new THREE.Vector3());
+            const debugText = `Overlay world z: ${overlayWorld.z.toFixed(3)}`;
+            if (debugInfo) debugInfo.textContent = debugText;
+            arStatus.textContent = "✓ Door detected. Overlay visible.";
+          }, 150);
+        };
+        anchor.onTargetLost = () => {
+          overlayGroup.visible = false;
+          arStatus.textContent = "Searching for the door target…";
+          if (debugInfo) debugInfo.textContent = "Searching…";
+        };
+
+        await mindarThree.start();
+        renderer.setAnimationLoop(() => {
+          renderer.render(scene, camera);
+        });
+
+        overlayEl.classList.add("hidden");
+        arStatus.textContent = "Camera ready. Point at the door target.";
+      } catch (err) {
+        arStatus.textContent = `Failed to start AR: ${err?.message || "Camera blocked"}. Please allow camera access and reload.`;
+        console.error("AR start error", err);
+      }
+    };
+
+    startButton.addEventListener("click", async () => {
+      await startAR();
     });
+
+    checkMindFile();
   </script>
 </body>
 </html>

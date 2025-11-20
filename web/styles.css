@@ -99,15 +99,15 @@ button:disabled {
   box-shadow: none;
 }
 
-.ar-scene {
+#ar-container {
   position: fixed;
   inset: 0;
   width: 100vw;
   height: 100vh;
+  overflow: hidden;
 }
 
-.ar-scene canvas,
-.ar-scene .a-canvas {
+#ar-container canvas {
   position: fixed;
   inset: 0;
   width: 100%;
@@ -115,12 +115,10 @@ button:disabled {
   z-index: 1;
 }
 
-.mindar-video {
+.debug {
   position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  object-fit: cover;
-  z-index: 0;
-  background: black;
+  bottom: 12px;
+  left: 12px;
+  color: #cbd5e1;
+  z-index: 12;
 }
