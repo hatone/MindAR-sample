@@ -353,6 +353,7 @@ Add timestamps and notes as work progresses:
 - `2025-11-20 14:56 JST` — Simplified overlay transforms (Z-offset only) and added console logging on targetFound for debugging; redeployed (unique: https://691eada3b565a3a139ee0ac3--door-usage-ar-20251120.netlify.app).
 - `2025-11-20 15:05 JST` — Added detailed targetFound debug logging (camera, target, text, plane, renderer) to inspect state when detection fires; redeployed (unique: https://691eb9b3468e48d3cc7a255a--door-usage-ar-20251120.netlify.app).
 - `2025-11-20 15:53 JST` — Ensured overlay entity visibility toggles on targetFound/targetLost; redeployed (unique: https://691ebaefcb30a2d32643e1dd--door-usage-ar-20251120.netlify.app).
+- `2025-11-20 15:58 JST` — Restored detailed targetFound debug logging (camera/target/text/plane/renderer) per request; redeployed (unique: https://691ebbbf4c4c42d8cbc0b4aa--door-usage-ar-20251120.netlify.app).
 
 ---
 

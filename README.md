@@ -75,7 +75,7 @@ Note: `netlify.toml` is included and defaults `publish = "web"`, so `netlify dep
 
 Current production deploy:
 - https://door-usage-ar-20251120.netlify.app
-- Latest unique: https://691ebaefcb30a2d32643e1dd--door-usage-ar-20251120.netlify.app
+- Latest unique: https://691ebbbf4c4c42d8cbc0b4aa--door-usage-ar-20251120.netlify.app
 
 If camera permission prompt does not appear on iPhone Safari:
 - Check Settings → Safari → Camera is set to “Allow”.
