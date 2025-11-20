@@ -38,10 +38,10 @@
 
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-    <a-entity mindar-image-target="targetIndex: 0">
+    <a-entity mindar-image-target="targetIndex: 0" scale="1.25 1.25 1.25">
       <a-plane
         position="0 0 0"
-        rotation="0 0 0"
+        rotation="-90 0 0"
         width="1.6"
         height="0.9"
         material="color: #0f172a; opacity: 0.72; transparent: true; shader: flat; side: double">
@@ -53,8 +53,9 @@
         width="1.4"
         color="#f8fafc"
         side="double"
-        position="0 0 0.01"
-        rotation="0 0 0">
+        position="0 0 0.04"
+        rotation="-90 0 0"
+        render-order="2">
       </a-text>
     </a-entity>
   </a-scene>
@@ -154,6 +155,12 @@
       });
 
       if (targetEntity) {
+        targetEntity.addEventListener("loaded", () => {
+          targetEntity.object3D.traverse((obj) => {
+            obj.frustumCulled = false;
+            if (obj.material) obj.renderOrder = 2;
+          });
+        });
         targetEntity.addEventListener("targetFound", () => {
           arStatus.textContent = "Door detected. Overlay locked.";
         });
