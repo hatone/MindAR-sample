@@ -68,6 +68,11 @@ Option C — GitHub Pages (manual):
 - In repo settings, set Pages to serve from the `web/` directory (or a `gh-pages` branch containing `web` contents at root).
 - Use the Pages URL on iPhone Safari to test.
 
+Option D — Vercel (static, no build):
+- A `vercel.json` is included to serve `/web` from the site root.
+- Install CLI and log in: `npm install -g vercel` then `vercel login`.
+- Deploy: `vercel --prod --confirm --name mindar-sample` (from repo root). The CLI will pick up `vercel.json` and publish the static contents of `web/`.
+
 Recording on iOS:
 - Enable iOS Control Center recording, start recording, open the hosted URL in Safari, run the AR experience, then stop recording and save the video.
 

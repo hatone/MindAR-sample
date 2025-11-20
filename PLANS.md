@@ -360,6 +360,7 @@ Add timestamps and notes as work progresses:
 - `2025-11-20 16:24 JST` — Pulled overlay further forward (-0.32/-0.28), forced matrixWorld update before logging; redeployed (unique: https://691ec0f7711b36ead54034da--door-usage-ar-20251120.netlify.app).
 - `2025-11-20 16:28 JST` — Redeployed after overlay-forward tweak for further validation; latest unique: https://691ec313f8d3b8766f51dd05--door-usage-ar-20251120.netlify.app.
 - `2025-11-20 16:40 JST` — Added 150ms delay before reading transforms after targetFound to avoid NaN/huge pose values; Netlify deploy attempt returned 403 (needs retry with valid auth).
+- `2025-11-20 16:50 JST` — Added `vercel.json` to serve `/web` directly from Vercel as a static site; documented Vercel deploy steps in README.
 
 ---
 
