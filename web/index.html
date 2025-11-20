@@ -67,6 +67,7 @@
       const assetStatus = document.getElementById("asset-status");
       const arStatus = document.getElementById("ar-status");
       const targetEntity = document.querySelector("[mindar-image-target]");
+      const cameraEl = document.querySelector("a-camera");
 
       const checkMindFile = async () => {
         try {
@@ -136,6 +137,12 @@
             mindarSystem.video.classList.add("mindar-video");
             mindarSystem.video.style.zIndex = "0";
           }
+          if (cameraEl?.getObject3D("camera")) {
+            const camObj = cameraEl.getObject3D("camera");
+            camObj.near = 0.01;
+            camObj.far = 1000;
+            camObj.updateProjectionMatrix();
+          }
           overlay.classList.add("hidden");
           arStatus.textContent = "";
         } catch (err) {
@@ -163,7 +170,6 @@
         targetEntity.addEventListener("targetFound", (e) => {
           console.log("FOUND", e);
           targetEntity.object3D.visible = true;
-          const cameraEl = document.querySelector("a-camera");
           const sceneRenderer = sceneEl.renderer;
           const textEl = document.querySelector("a-text");
           const planeEl = document.querySelector("a-plane");
