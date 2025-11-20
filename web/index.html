@@ -68,6 +68,8 @@
       const arStatus = document.getElementById("ar-status");
       const targetEntity = document.querySelector("[mindar-image-target]");
       const cameraEl = document.querySelector("a-camera");
+      const textEl = document.querySelector("a-text");
+      const planeEl = document.querySelector("a-plane");
 
       const checkMindFile = async () => {
         try {
@@ -166,29 +168,48 @@
             obj.frustumCulled = false;
             if (obj.material) obj.renderOrder = 2;
           });
+          if (planeEl) {
+            planeEl.setAttribute("material", {
+              color: "#0f172a",
+              opacity: 0.72,
+              transparent: true,
+              shader: "flat",
+              side: "double",
+              depthTest: false
+            });
+            if (planeEl.object3D) planeEl.object3D.renderOrder = 10;
+          }
+          if (textEl?.object3D) {
+            textEl.object3D.renderOrder = 11;
+            textEl.object3D.frustumCulled = false;
+          }
         });
         targetEntity.addEventListener("targetFound", (e) => {
           console.log("FOUND", e);
           targetEntity.object3D.visible = true;
           const sceneRenderer = sceneEl.renderer;
-          const textEl = document.querySelector("a-text");
-          const planeEl = document.querySelector("a-plane");
           if (cameraEl?.components?.camera?.camera) {
             const cam = cameraEl.components.camera.camera;
             console.log("Camera:", cameraEl.object3D.position, cam.near, cam.far);
+            console.log("Camera proj[0..3]:", cam.projectionMatrix.elements.slice(0, 4));
+            console.log("Camera world pos:", cameraEl.object3D.getWorldPosition(new AFRAME.THREE.Vector3()));
           }
           if (targetEntity?.object3D) {
             console.log("Target visible:", targetEntity.object3D.visible);
             console.log("Target position:", targetEntity.object3D.position);
             console.log("Target scale:", targetEntity.object3D.scale);
+            console.log("Target world pos:", targetEntity.object3D.getWorldPosition(new AFRAME.THREE.Vector3()));
+            console.log("Target world matrix[12..15]:", targetEntity.object3D.matrixWorld.elements.slice(12, 16));
           }
           if (textEl?.object3D) {
             console.log("Text visible:", textEl.object3D.visible);
             console.log("Text position:", textEl.object3D.position);
+            console.log("Text world pos:", textEl.object3D.getWorldPosition(new AFRAME.THREE.Vector3()));
           }
           if (planeEl?.object3D) {
             console.log("Plane visible:", planeEl.object3D.visible);
             console.log("Plane position:", planeEl.object3D.position);
+            console.log("Plane world pos:", planeEl.object3D.getWorldPosition(new AFRAME.THREE.Vector3()));
           }
           if (sceneRenderer) {
             console.log("Renderer:", sceneRenderer.sortObjects, sceneRenderer.autoClear);
